@@ -2,12 +2,11 @@
 library(dplyr)
 library(enrichR)
 
-args <- commandArgs(trailingOnly=TRUE) 
+args <- commandArgs(trailingOnly=TRUE)
 
 ## load data
 input_data <- readRDS(paste0("data/", args))
-
-print(names(input_data))
+phate <- read.csv("data/phate.csv")
 
 # EDA Analysis
 ## PCA
@@ -20,7 +19,7 @@ pca_result <- prcomp(
 )
 tsne_result <- tsne(t(input_data$eset))$data
 colnames(tsne_result) <- c("Dim1", "Dim2")
-eda <- list(pca = pca_result, tsne = tsne_result)
+eda <- list(pca = pca_result, tsne = tsne_result, phate = phate)
 
 # Differential Expression
 source("code/functions.R")

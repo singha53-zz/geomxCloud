@@ -1,9 +1,9 @@
 USER_NAME=singha53
 IMAGE_NAME=geomx
-VERSION=0.95
+VERSION=0.96
 
-build: 
+build:
 	docker build --no-cache -t $(USER_NAME)/$(IMAGE_NAME):v$(VERSION) .
 
-push: 
+push:
 	docker push $(USER_NAME)/$(IMAGE_NAME):v$(VERSION)

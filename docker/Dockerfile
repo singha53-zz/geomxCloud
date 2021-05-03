@@ -1,14 +1,14 @@
 FROM rocker/tidyverse
 LABEL maintainer="Amrit Singh <asingh.analytics@gmail.com>"
 
-RUN apt-get update -qq && apt-get install -y \ 
-    git-core \ 
-    libssl-dev \ 
+RUN apt-get update -qq && apt-get install -y \
+    git-core \
+    libssl-dev \
     libcurl4-gnutls-dev \
     python3.7 \
     python3-pip
 
-RUN pip3 install awscli
+RUN pip3 install awscli pyper numpy phate
 
 WORKDIR /tmp/workdir
 
