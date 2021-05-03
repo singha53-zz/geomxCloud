@@ -6,7 +6,7 @@ suppressPackageStartupMessages(library("shinydashboard"));
 suppressPackageStartupMessages(library("shinyBS"));
 suppressPackageStartupMessages(library("dqshiny"));
 suppressPackageStartupMessages(library("plotly"));
-# suppressPackageStartupMessages(library("geomxCloud")); # devtools::install_github("singha53/geomxCloud", force = TRUE)
+suppressPackageStartupMessages(library("geomxCloud")); # devtools::install_github("singha53/geomxCloud", force = TRUE)
 suppressPackageStartupMessages(library("googleVis"));
 suppressPackageStartupMessages(library("limma"));
 suppressPackageStartupMessages(library("lattice"));
