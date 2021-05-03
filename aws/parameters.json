@@ -1,0 +1,22 @@
+[
+    {
+        "ParameterKey": "ClusterName",
+        "ParameterValue": "geomx-cluster"
+    },
+    {
+        "ParameterKey": "LogGroupName",
+        "ParameterValue": "geomx-logGroup"
+    },
+    {
+        "ParameterKey": "ServiceName",
+        "ParameterValue": "geomx-service"
+    },
+    {
+        "ParameterKey": "UploadBucketName",
+        "ParameterValue": "geomx-upload-bucket"
+    },
+    {
+        "ParameterKey": "DownloadBucketName",
+        "ParameterValue": "geomx-download-bucket"
+    }
+]

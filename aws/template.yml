@@ -1,0 +1,307 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Parameters:
+  ClusterName:
+    Type: String
+  LogGroupName:
+    Type: String
+  ServiceName:
+    Type: String
+  UploadBucketName:
+    Description: GeoMx Cloud uploads files to this S3 bucket
+    Type: String
+  DownloadBucketName:
+    Description: Users download the RShiny app R-packge using signed S3 urls from this bucket
+    Type: String
+Resources:
+  VPC:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://geomx-s3-bucket.s3.amazonaws.com/vpc.yaml
+      Parameters:
+        EnvironmentName: !Ref AWS::StackName
+        VpcCIDR: 10.180.0.0/16
+        PublicSubnet1CIDR: 10.180.8.0/21
+        PublicSubnet2CIDR: 10.180.16.0/21
+        PrivateSubnet1CIDR: 10.180.24.0/21
+        PrivateSubnet2CIDR: 10.180.32.0/21
+  Cluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: !Ref ClusterName
+  LogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Ref LogGroupName
+  ECSTaskRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: [ ecs-tasks.amazonaws.com ]
+          Action:
+          - sts:AssumeRole
+      Path: /
+      Policies:
+      - PolicyName: TaskAccess
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Action:
+            - 's3:ListBucket'
+            - 's3:GetBucketLocation'
+            Effect: Allow
+            Resource:
+            - !Sub "arn:aws:s3:::${UploadBucketName}"
+          - Action:
+            - 's3:GetObject'
+            Effect: Allow
+            Resource:
+            - !Sub "arn:aws:s3:::${UploadBucketName}/*"
+          - Action:
+            - 's3:PutObject'
+            Effect: Allow
+            Resource:
+            - !Sub "arn:aws:s3:::${DownloadBucketName}/*"
+  ECSExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: [ ecs-tasks.amazonaws.com ]
+          Action: 
+          - sts:AssumeRole
+      Path: /
+      ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
+  ContainerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: ContainerSecurityGroup
+      GroupDescription: Security group for GeoMx container
+      VpcId: !GetAtt VPC.Outputs.VPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+  TaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: geomx-task
+      Cpu: 1024
+      Memory: 2048
+      NetworkMode: awsvpc
+      TaskRoleArn: !Ref ECSTaskRole
+      ExecutionRoleArn: !Ref ECSExecutionRole
+      ContainerDefinitions:
+        - Name: geomx-container
+          Image: docker.io/singha53/geomx:v0.95
+          Environment:
+            - Name: S3_BUCKET
+              Value: !Ref UploadBucketName
+            - Name: File
+              Value: 'geomx-analysis.rds'
+          PortMappings:
+            - ContainerPort: 80
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-region: !Ref AWS::Region
+              awslogs-group: !Ref LogGroup
+              awslogs-stream-prefix: ecs
+      RequiresCompatibilities:
+        - EC2
+        - FARGATE
+  Service:
+    Type: AWS::ECS::Service
+    Properties:
+      ServiceName: !Ref ServiceName
+      Cluster: !Ref Cluster
+      TaskDefinition: !Ref TaskDefinition
+      DesiredCount: 0
+      LaunchType: FARGATE
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: ENABLED
+          Subnets:
+            - !GetAtt VPC.Outputs.PublicSubnet1
+            - !GetAtt VPC.Outputs.PublicSubnet2
+            - !GetAtt VPC.Outputs.PrivateSubnet1
+            - !GetAtt VPC.Outputs.PrivateSubnet2
+          SecurityGroups:
+            - !GetAtt ContainerSecurityGroup.GroupId
+  UploadBucket:
+    Type: AWS::S3::Bucket
+    DependsOn: UploadBucketPermission
+    Properties:
+      BucketName: !Ref UploadBucketName
+      NotificationConfiguration:
+        LambdaConfigurations:
+        - Event: 's3:ObjectCreated:*'
+          Function: !GetAtt AnalysisRunner.Arn
+  UploadBucketPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      FunctionName: !Ref AnalysisRunner
+      Principal: s3.amazonaws.com
+      SourceAccount: !Ref "AWS::AccountId"
+      SourceArn: !Sub "arn:aws:s3:::${UploadBucketName}"
+  DownloadBucket:
+    Type: AWS::S3::Bucket
+    DependsOn: DownloadBucketPermission
+    Properties:
+      BucketName: !Ref DownloadBucketName
+      NotificationConfiguration:
+        LambdaConfigurations:
+        - Event: 's3:ObjectCreated:*'
+          Function: !GetAtt Emailer.Arn
+  DownloadBucketPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      FunctionName: !Ref Emailer
+      Principal: s3.amazonaws.com
+      SourceAccount: !Ref "AWS::AccountId"
+      SourceArn: !Sub "arn:aws:s3:::${DownloadBucketName}"
+  DownloadBucketPolicy:
+    Type: 'AWS::S3::BucketPolicy'
+    Properties:
+      Bucket: !Ref DownloadBucket
+      PolicyDocument:
+        Statement:
+          - Action:
+              - 's3:*'
+            Effect: Allow
+            Resource: !Join
+              - ''
+              - - 'arn:aws:s3:::'
+                - !Ref DownloadBucket
+                - /*
+            Principal: '*'
+          - Action:
+              - 's3:GetObject'
+            Effect: Allow
+            Resource: !Join
+              - ''
+              - - 'arn:aws:s3:::'
+                - !Ref DownloadBucket
+                - /*
+            Principal: '*'
+            Condition:
+              IpAddress:
+                'aws:SourceIp':
+                  - '10.180.8.0/21'
+                  - '10.180.16.0/21'
+                  - '10.180.24.0/21'
+                  - '10.180.32.0/21'
+  IamRoleLambdaExecution:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal: {Service: [lambda.amazonaws.com]}
+          Action: ['sts:AssumeRole']
+      Path: /
+      ManagedPolicyArns:
+      - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+      Policies:
+      - PolicyName: S3Policy
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - 's3:GetObject'
+              Resource: !Sub "arn:aws:s3:::${UploadBucketName}/*"
+            - Effect: Allow
+              Action:
+                - 's3:PutObject'
+                - 's3:DeleteObject'
+              Resource: !Sub "arn:aws:s3:::${DownloadBucketName}/*"
+            - Effect: Allow
+              Action:
+                - 'ecs:RunTask'
+              Resource: '*'
+            - Effect: Allow
+              Action:
+                - 'iam:PassRole'
+              Resource: "*"
+  AnalysisRunner:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      Handler: lambda_ecs/app.lambda_handler
+      Runtime: nodejs12.x
+      Description: Run ECS task
+      MemorySize: 512
+      Role: !GetAtt 
+        - IamRoleLambdaExecution
+        - Arn
+      Timeout: 30
+      Environment:
+        Variables:
+          ECS_TASK_DEFINITION: !Ref TaskDefinition
+          ECS_TASK_VPC_SUBNET_1: !GetAtt VPC.Outputs.PublicSubnet1
+          ECS_TASK_VPC_SUBNET_2: !GetAtt VPC.Outputs.PublicSubnet2
+          ECS_CLUSTER_NAME: !GetAtt Cluster.Arn
+          S3_BUCKET: !Sub "${UploadBucketName}"
+          File: 'geomx-analysis.rds'
+    DependsOn:
+      - IamRoleLambdaExecution
+  IamRoleLambdaSES:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal: {Service: [lambda.amazonaws.com]}
+          Action: ['sts:AssumeRole']
+      Path: /
+      ManagedPolicyArns:
+      - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+      Policies:
+      - PolicyName: SESPolicy
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - 'ses:SendEmail'
+                - 'ses:SendRawEmail'
+              Resource: "*"
+            - Effect: Allow
+              Action:
+                - 'ecs:StopTask'
+              Resource: '*'
+            - Effect: Allow
+              Action:
+                - 'iam:PassRole'
+              Resource: "*"
+  Emailer:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      Handler: lambda_ses/app.lambda_handler
+      Runtime: nodejs12.x
+      Description: Email user shareable link
+      MemorySize: 512
+      Role: !GetAtt 
+        - IamRoleLambdaSES
+        - Arn
+      Timeout: 30
+      Environment:
+        Variables:
+          ECS_TASK_DEFINITION: !Ref TaskDefinition
+          ECS_TASK_VPC_SUBNET_1: !GetAtt VPC.Outputs.PublicSubnet1
+          ECS_TASK_VPC_SUBNET_2: !GetAtt VPC.Outputs.PublicSubnet2
+          ECS_CLUSTER_NAME: !GetAtt Cluster.Arn
+          S3_BUCKET: !Sub "${UploadBucketName}"
+          Email: "sample@email.com"
+    DependsOn:
+      - IamRoleLambdaSES

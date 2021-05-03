@@ -37,3 +37,12 @@ vignettes/*.pdf
 
 # R Environment Variables
 .Renviron
+
+# secrets
+# secrets
+inst/app/rsconnect/
+inst/app/makeEnvVars.R
+inst/app/S3BUCKET.rds
+inst/app/AWS_ACCESS_KEY_ID.rds
+inst/app/AWS_SECRET_ACCESS_KEY.rds
+inst/app/AWS_DEFAULT_REGION.rds
