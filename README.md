@@ -129,6 +129,8 @@ database](https://github.com/singha53/geomxCloud/blob/master/inst/extdata/pathwa
 ## Room for improvements
 
   - add additional methods for data analysis
+  - simulateously upload multiple spatial expression data (based on different normalization schemes)
+  - apply variable filtering as well (currently only sample filtering is allows based on sample annotations)
 
 ## Contributing
 

@@ -11,12 +11,17 @@ data_upload_ui <- function(id) {
   shiny::fluidPage(
     shiny::sidebarLayout(
       shiny::sidebarPanel(
+        shinyBS::bsButton(ns("verify_email"), label = "", icon = shiny::icon("exclamation-triangle"), style = "color:gray", size = "small"),
+        shinyBS::bsPopover(id = ns("verify_email"), title = "Verified users only!",
+                           content = "If you would like to use this production app, please send your email to asingh.analytics@gmail.com so that it can be verified!",
+                           placement = "right",
+                           trigger = "click",  options = NULL),
         h3("Email"),
         shiny::textInput(ns("email"), "Enter your email address", "", placeholder = "Email"),
         h3("File upload"),
         fileInput(ns("omics_data"),
           label = "Spatial expression data",
-          multiple = TRUE
+          multiple = FALSE
         ),
         fileInput(inputId = ns("demo"), label = "Sample Annotations"),
         esquisse::filterDF_UI(ns("filtering")),

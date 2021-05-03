@@ -10,9 +10,8 @@ knitr::opts_chunk$set(echo = TRUE)
 library(enrichR)
 
 ## load data
-load("/Users/asingh/Documents/prof_job/workshops/geomx_hackathon/GeoMxNet/frontend/geomx-analysis.RData")
-input_data = list(demo = demo, eset = eset, response = res, response_var = response_var)
-usethis::use_data(input_data, overwrite = TRUE)
+results <- readRDS("/Users/asingh/Downloads/asingh.analytics-geomx-analysis.rds-output.rds")
+input_data = results$input_data
 ```
 
 # EDA Analysis
@@ -22,17 +21,16 @@ usethis::use_data(input_data, overwrite = TRUE)
 ```{r}
 library(M3C)
 pca_result <- prcomp(
-      x = eset,
+      x = input_data$eset,
       scale. = TRUE,
       center = TRUE,
       rank. = 5
     )
-tsne_result <- tsne(t(eset))$data
+tsne_result <- tsne(t(input_data$eset))$data
 colnames(tsne_result) <- c("Dim1", "Dim2")
 
 eda <- list(pca = pca_result, tsne = tsne_result)
 
-usethis::use_data(eda, overwrite = TRUE)
 ```
 
 # Differential Expression
@@ -58,7 +56,6 @@ toptables <- lapply(comparisons, function(comparison){
 })
 names(toptables) <- comparisons
 
-usethis::use_data(toptables, overwrite = TRUE)
 ```
 
 # Geneset enrichment analyses
@@ -89,7 +86,6 @@ enrichr_results <- lapply(comparisons, function(comparison){
 })
 names(enrichr_results) <- comparisons
 
-usethis::use_data(enrichr_results, overwrite = TRUE)
 ```
 
 ## write out to results
@@ -100,6 +96,12 @@ output <- list(input_data  = input_data,
                toptables = toptables,
                enrichr_results = enrichr_results)
 
-saveRDS(output, file = "output.rds")
+
+```
+
+# PHATE
+
+```{python}
+import phate
 ```
 
