@@ -58,9 +58,7 @@ sidebar <- shinydashboard::dashboardSidebar(
         shinydashboard::menuSubItem("Exploratory Data Analysis",
                                     tabName = "subitem2"),
         shinydashboard::menuSubItem("Differential Expression",
-                                    tabName = "subitem3"),
-        shinydashboard::menuSubItem("Biomarker Panels",
-                                    tabName = "subitem4")
+                                    tabName = "subitem3")
       ),
       shinydashboard::menuItem(
         "Generate Report",
@@ -109,9 +107,6 @@ body <- shinydashboard::dashboardBody(
         ),
         shinydashboard::tabItem("subitem3",
                                 geomxCloud::dea()
-        ),
-        shinydashboard::tabItem("subitem4",
-                                geomxCloud::biomarker_discovery_analysis()
         ),
         shinydashboard::tabItem(
           tabName = "methods",
