@@ -2,6 +2,35 @@ options(shiny.maxRequestSize=100*1024^2)
 function(input, output, session) {
   ns <- session$ns
 
+  # Homepage display
+  output$author <- renderValueBox({
+    valueBox(
+      value = "Author",
+      subtitle = "Amrit Singh",
+      icon = icon("author"),
+      color = "black",
+      href = "https://www.amritsingh.ca"
+    )
+  })
+  output$source <- renderValueBox({
+    valueBox(
+      value = "Source code",
+      subtitle = "GeoMx Cloud",
+      icon = icon("author"),
+      color = "black",
+      href = "https://github.com/singha53/geomxCloud"
+    )
+  })
+  output$contest <- renderValueBox({
+    valueBox(
+      value = "Contest",
+      subtitle = "NanoString Spatial Omics Hackathon",
+      icon = icon("author"),
+      color = "black",
+      href = "https://nanostring.devpost.com/"
+    )
+  })
+
   # Do not show analysis sidemenu at startup!!
   output$analysisRan <- reactive({
     returnedValue = FALSE
@@ -32,6 +61,7 @@ function(input, output, session) {
       omics_data = list(mRNA = data_upload_server_vars$all_datasets$val$input_data$eset)
       pca <- list(mRNA = data_upload_server_vars$all_datasets$val$eda$pca)
       tsne <- list(mRNA = data_upload_server_vars$all_datasets$val$eda$tsne)
+      toptables <- data_upload_server_vars$all_datasets$val$toptables
       enrichr_results <- data_upload_server_vars$all_datasets$val$enrichr_results
 
       withProgress(message = 'Running analysis...',
@@ -129,6 +159,7 @@ function(input, output, session) {
                                          perform_pathway_analysis = perform_pathway_analysis(),
                                          group_colors = group_colors,
                                          enrichr_results = enrichr_results,
+                                         toptables = toptables,
                                          dea_ui_vars = dea_ui_vars)
                             }
                      )

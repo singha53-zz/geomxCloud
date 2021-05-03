@@ -58,17 +58,7 @@ data_upload_ui <- function(id) {
             total = 100, display_pct = TRUE
           ),
           # ),
-          DT::dataTableOutput(outputId = ns("table")),
-          box(
-            width = 8, status = "info", solidHeader = TRUE,
-            title = "Application architecture",
-            plotOutput(ns("packagePlot"), width = "100%", height = 600)
-          ),
-          box(
-            width = 4, status = "info",
-            title = "Types of analyses",
-            tableOutput(ns("packageTable"))
-          )
+          DT::dataTableOutput(outputId = ns("table"))
         )
       )
     )
@@ -396,27 +386,6 @@ data_upload_server <- function(input, output, session,
       value = nrow(res_filter$data_filtered()), total = nrow(get_demo_data())
     )
   })
-
-
-  output$packagePlot <- renderPlot({
-
-  })
-
-  output$packageTable <- renderTable(
-    {
-      data.frame(
-        Method = c("Cell-type deconvolution", "Differential Expression Analysis", "Pathway Analysis", "Biomarker Analysis", "Convolutional Neural Networks", "Graph Neural Networks"),
-        Language = c(rep("R", 4), rep("Python", 2))
-      )
-    },
-    digits = 1,
-    striped = TRUE,
-    hover = TRUE,
-    bordered = TRUE,
-    spacing = "l",
-    align = c("?", "l", "r"),
-    width = "100%"
-  )
 
   observeEvent(input$aws, {
     req(get_demo_data())

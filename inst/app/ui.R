@@ -89,16 +89,13 @@ body <- shinydashboard::dashboardBody(
       shinydashboard::tabItems(
         shinydashboard::tabItem(
           tabName = "overview",
+          fluidRow(align = "center",
+            valueBoxOutput("author"),
+            valueBoxOutput("source"),
+            valueBoxOutput("contest")
+          ),
           fluidRow(HTML("<img src='app-architecture.png'
             id='app-architecture'/>")),
-          fluidRow(align = "center",
-            column(12, h4("Author"), a("Amrit Singh",
-              href = "https://www.amritsingh.ca")),
-            column(12, h4("Source code"), a("GeoMxCloud",
-              href = "https://github.com/singha53/geomxCloud")),
-            column(12, h4("Contest Submission"), a("NanoString Spatial Omics Hackathon",
-              href = "https://nanostring.devpost.com/"))
-          )
         ),
         shinydashboard::tabItem(
           tabName = "data",

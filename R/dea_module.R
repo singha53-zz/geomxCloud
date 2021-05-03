@@ -187,7 +187,8 @@ dea_ui_vars <- function(input, output, session) {
 #' @param eda_ui_vars list of one element ncomp(containing number of PCs)
 #' @export
 dea_server <- function(input, output, session, datasetName, dataset, response,
-                       response_var, perform_pathway_analysis, group_colors, enrichr_results, dea_ui_vars) {
+                       response_var, perform_pathway_analysis, group_colors, enrichr_results,
+                       toptables, dea_ui_vars) {
   ns <- session$ns
 
   shiny::observeEvent(dea_ui_vars$fdr(), {
