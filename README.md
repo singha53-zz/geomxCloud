@@ -43,6 +43,7 @@ make push
 1) make IAM User
 2) Create Cloud9 environment
 3) Cloudformation
+4) Verify Email using SES (via AWS console)
 
 ```
 cd aws
