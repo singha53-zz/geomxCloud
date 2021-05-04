@@ -24,12 +24,12 @@ exploratory data analysis, differential expression analysis. All computations ar
 <!-- end list -->
 
 ``` r
-git clone https://github.com/singha53/GeoMxCloud.git
-cd GeoMxCloud
+git clone https://github.com/singha53/geomxCloud.git
+cd geomxCloud
 ```
 
 ## Docker image
-* modify USER_NAME in Makefile
+* modify USER_NAME in Makefile to your DockerHub profile username
 
 ```
 cd docker 
@@ -138,11 +138,11 @@ feature branch. Pull requests are warmly welcome.
 
 ## Links
 
-  - Repository: <https://github.com/singha53/GeoMxCloud/>
+  - Repository: <https://github.com/singha53/geomxCloud/>
 
 ## References
 
-  - Inspiration: [omicsBioAnlaytics](https://github.com/singha53/GeoMxCloud/)
+  - Inspiration: [omicsBioAnlaytics](https://github.com/singha53/omicsBioAnalytics/)
 
 ## Copyright and license
 
