@@ -142,12 +142,6 @@ feature branch. Pull requests are warmly welcome.
 
   - Repository: <https://github.com/singha53/geomxCloud/>
 
-## References
-
-  - Inspiration: [omicsBioAnlaytics](https://github.com/singha53/omicsBioAnalytics/)
-
 ## Copyright and license
-
-Copyright 2020 AMRITPAL SINGH Inc.
 
 The code in this project is licensed under MIT license.
