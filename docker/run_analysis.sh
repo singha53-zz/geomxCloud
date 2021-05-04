@@ -3,9 +3,6 @@
 echo "Copying data from Upload Bucket"
 aws s3 cp s3://$S3_BUCKET/ ./data/ --recursive
 
-echo "Running python script"
-python3 phate.py $File
-
 echo "Running R scripts"
 Rscript ./code/bioinformatics_analyses.R $File
 

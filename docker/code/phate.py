@@ -4,9 +4,9 @@ import numpy
 
 print("read in expression data")
 r=R(use_pandas=True)
-eset = 'data/'+sys.argv[1]
-r.assign("eset", eset)
-expr  = 'eset <- readRDS(eset)'
+path = 'data/'+sys.argv[1]
+r.assign("file", path)
+expr  = 'eset <- readRDS(file)'
 r(expr)
 res= r.get('eset')
 data = res['input_data']['eset']

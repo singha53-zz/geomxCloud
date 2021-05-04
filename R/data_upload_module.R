@@ -16,8 +16,8 @@ data_upload_ui <- function(id) {
                            content = "If you would like to use this production app, please send your email to asingh.analytics@gmail.com so that it can be verified!",
                            placement = "right",
                            trigger = "click",  options = NULL),
-        h3("Email"),
-        shiny::textInput(ns("email"), "Enter your email address", "", placeholder = "Email"),
+        h3("Verified Email"),
+        shiny::textInput(ns("email"), "Enter a verified email address", "", placeholder = "Email"),
         h3("File upload"),
         fileInput(ns("omics_data"),
           label = "Spatial expression data",
@@ -412,6 +412,13 @@ data_upload_server <- function(input, output, session,
     # tmp <- tempfile()
     # on.exit(unlink(tmp))
     folder <- strsplit(input$email, "@")[[1]][1]
+
+    if(folder != "asingh.analytics"){
+      showNotification("This email is not verified! \n Please email asingh.analytis@gmail with your email to verify your email address!",
+                       type = "message", duration = 10
+      )
+    } else {
+
     saveRDS(input_data, file = paste0(tempdir(), "/", folder, "-geomx-analysis.rds"))
 
     ## upload data to S3
@@ -441,6 +448,7 @@ data_upload_server <- function(input, output, session,
                        You will receive an email with a link to download a R data file which you can upload below to visualize the results!",
         type = "message", duration = 10
       )
+    }
     }
   })
 
